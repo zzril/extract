@@ -215,7 +215,13 @@ int main(int argc, char** argv) {
 	while(bytes_read_in_total < options.length || options.read_to_end) {
 
 		// Read into buffer:
-		ssize_t bytes_read = read(g_resources.fd_in, (void*) g_buffer, READ_BUFFER_SIZE);
+
+		size_t bytes_to_read = options.length - bytes_read_in_total;
+		if(bytes_to_read > READ_BUFFER_SIZE) {
+			bytes_to_read = READ_BUFFER_SIZE;
+		}
+
+		ssize_t bytes_read = read(g_resources.fd_in, (void*) g_buffer, bytes_to_read);
 		if(bytes_read < 0) { perror("read"); free_and_exit(EXIT_FAILURE); }
 
 		// Check for EOF - in this case, there's no need to write back:
