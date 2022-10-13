@@ -214,13 +214,19 @@ int main(int argc, char** argv) {
 
 	while(bytes_read_in_total < options.length || options.read_to_end) {
 
-		// Read into buffer:
-
-		size_t bytes_to_read = options.length - bytes_read_in_total;
-		if(bytes_to_read > READ_BUFFER_SIZE) {
+		// Calculate how many bytes to read:
+		size_t bytes_to_read;
+		if(options.read_to_end) {
 			bytes_to_read = READ_BUFFER_SIZE;
 		}
+		else {
+			bytes_to_read = options.length - bytes_read_in_total;
+			if(bytes_to_read > READ_BUFFER_SIZE) {
+				bytes_to_read = READ_BUFFER_SIZE;
+			}
+		}
 
+		// Read into buffer:
 		ssize_t bytes_read = read(g_resources.fd_in, (void*) g_buffer, bytes_to_read);
 		if(bytes_read < 0) { perror("read"); free_and_exit(EXIT_FAILURE); }
 
