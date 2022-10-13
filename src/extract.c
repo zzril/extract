@@ -24,6 +24,10 @@ SOFTWARE.
 
 // --------
 
+#define _DEFAULT_SOURCE
+
+// --------
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -185,16 +189,24 @@ int main(int argc, char** argv) {
 
 	parse_args(argc, argv, &options);
 
-	// Open outfile:
-	g_resources.fd_out = open(options.outfile, O_WRONLY | O_CREAT | O_TRUNC, 0444);
-	if(g_resources.fd_out < 0) { perror("open"); free_and_exit(EXIT_FAILURE); }
-
 	// Open infile:
 	g_resources.fd_in = open(options.infile, O_RDONLY);
 	if(g_resources.fd_in < 0) { perror("open"); free_and_exit(EXIT_FAILURE); }
 
+	// Check if infile is a directory:
+	struct stat statbuf;
+	if(fstat(g_resources.fd_in, &statbuf) != 0) { perror("fstat"); free_and_exit(EXIT_FAILURE); }
+	if(S_ISDIR(statbuf.st_mode)) {
+		fprintf(stderr, "%s: Is a directory.\n", options.infile);
+		free_and_exit(EXIT_FAILURE);
+	}
+
 	// Position file cursor at offset:
-	if(lseek(g_resources.fd_in, options.offset, SEEK_SET) != 0) { perror("lseek"); free_and_exit(EXIT_FAILURE); }
+	if(lseek(g_resources.fd_in, options.offset, SEEK_SET) != options.offset) { perror("lseek"); free_and_exit(EXIT_FAILURE); }
+
+	// Open outfile:
+	g_resources.fd_out = open(options.outfile, O_WRONLY | O_CREAT | O_TRUNC, 0664);
+	if(g_resources.fd_out < 0) { perror("open"); free_and_exit(EXIT_FAILURE); }
 
 	// Read into buffer and write back:
 

@@ -19,7 +19,7 @@ RM=rm
 all: $(BIN)
 
 clean:
-	$(RM) ./$(BIN) || true
+	$(RM) ./$(BIN) ./examples/out/tmpfile || true
 
 $(BIN): $(SRC)
 	mkdir -p $(BIN_DIR)
